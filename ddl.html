@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dog Breed Images</title>
+  <style>
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .grid-container img {
+      width: 300px;
+      height: 300px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+    button, select {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 5px;
+      border: none;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    select {
+      background-color: #f8f8f8;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">Dog Breed Images</h1>
+
+  <div class="btn-container">
+    <select id="breed-dropdown">
+      <option value="">Select a Breed</option>
+    </select>
+    <button id="fetch-btn">Get Images</button>
+  </div>
+
+  <div id="image-container" class="grid-container"></div>
+
+  <div class="btn-container">
+    <button id="see-more-btn" style="display: none; align-items: center;" >See More Dogs</button>
+  </div>
+
+  <script>
+    const dropdown = document.getElementById("breed-dropdown");
+    const fetchBtn = document.getElementById("fetch-btn");
+    const seeMoreBtn = document.getElementById("see-more-btn");
+    const imageContainer = document.getElementById("image-container");
+
+    let selectedBreed = "";
+    const BASE_URL = "https://dog.ceo/api";
+
+    // Fetch all breeds and populate dropdown
+    const loadBreeds = async () => {
+      const response = await fetch(`${BASE_URL}/breeds/list/all`);
+      const data = await response.json();
+      const breeds = Object.keys(data.message);
+
+      // Populate dropdown
+      breeds.forEach(breed => {
+        const option = document.createElement("option");
+        option.value = breed;
+        option.innerText = breed.charAt(0).toUpperCase() + breed.slice(1);
+        dropdown.appendChild(option);
+      });
+    };
+
+    // Fetch dog images by breed
+    const fetchImages = async (clearPrevious = false) => {
+      if (!selectedBreed) {
+        alert("Please select a breed first!");
+        return;
+      }
+
+      const response = await fetch(`${BASE_URL}/breed/${selectedBreed}/images/random/9`);
+      const data = await response.json();
+      const imageUrls = data.message;
+
+      // Clear previous images if needed
+      if (clearPrevious) {
+        imageContainer.innerHTML = "";
+      }
+
+      // Append images
+      imageUrls.forEach(url => {
+        const imgElement = document.createElement("img");
+        imgElement.src = url;
+        imgElement.alt = selectedBreed;
+        imageContainer.appendChild(imgElement);
+      });
+
+      seeMoreBtn.style.display = "block";  // Show "See More" button
+    };
+
+    // Event Listeners
+    dropdown.addEventListener("change", () => {
+      selectedBreed = dropdown.value;
+    });
+
+    fetchBtn.addEventListener("click", () => fetchImages(true));  // Clear grid and fetch new
+    seeMoreBtn.addEventListener("click", () => fetchImages(false));  // Append images
+
+    // Load breeds on page load
+    loadBreeds();
+  </script>
+</body>
+</html>
